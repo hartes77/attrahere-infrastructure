@@ -1,0 +1,79 @@
+# .github/workflows/terraform-plan.yml
+
+name: 'Terraform Plan'
+
+on:
+  pull_request:
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+      - '**.tfvars.example' # Include anche file di documentazione
+
+permissions:
+  id-token: write # Necessario per l'autenticazione OIDC con AWS
+  contents: read  # Per fare il checkout del codice
+  pull-requests: write # Per scrivere i commenti sulla PR
+
+jobs:
+  terraform-plan:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./environments/staging # Eseguiamo i comandi da qui
+
+    steps:
+      # Step 1: Checkout del codice del repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Step 2: Configura le credenziali AWS in modo sicuro tramite OIDC
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-central-1
+
+      # Step 3: Setup di Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      # Step 4: Inizializza Terraform
+      - name: Terraform Init
+        run: terraform init
+
+      # Step 5: Genera il piano
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false
+        continue-on-error: true # Continua anche se il piano ha errori per poterlo pubblicare
+
+      # Step 6: Post Plan as PR Comment (Enhanced Logic)
+      - name: Post Plan as PR Comment
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const outcome = `${{ steps.plan.outcome }}`
+            const plan_output = `${{ steps.plan.outputs.stdout }}`
+            const error_output = `${{ steps.plan.outputs.stderr }}`
+            var body;
+
+            if (outcome == 'success') {
+              body = `#### ✅ Terraform Plan Succeeded 📖\n\n\`\`\`terraform\n${plan_output}\n\`\`\``;
+            } else {
+              body = `#### ❌ Terraform Plan Failed 🚨\n\n**Error Output:**\n\`\`\`\n${error_output}\n\`\`\``;
+            }
+
+            body += `\n\n*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
