@@ -1,0 +1,9 @@
+# environments/staging/staging.tfvars.example
+# Template file for staging variables
+# Actual values should be provided via GitHub Secrets as TF_VAR_* environment variables
+
+vpc_name            = ""  # TF_VAR_vpc_name
+vpc_cidr            = ""  # TF_VAR_vpc_cidr  
+vpc_azs             = []  # TF_VAR_vpc_azs
+vpc_private_subnets = []  # TF_VAR_vpc_private_subnets
+vpc_public_subnets  = []  # TF_VAR_vpc_public_subnets
