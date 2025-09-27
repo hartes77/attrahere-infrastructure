@@ -1,4 +1,5 @@
 # environments/staging/main.tf
+# Triggering CI/CD test
 
 module "vpc" {
   source = "../../modules/vpc"
