@@ -78,3 +78,27 @@ variable "db_skip_final_snapshot" {
   type        = bool
   default     = false
 }
+
+variable "rds_identifier" {
+  description = "Identifier for the RDS instance"
+  type        = string
+  default     = "attrahere-staging-db"
+}
+
+variable "rds_engine_version" {
+  description = "PostgreSQL engine version"
+  type        = string
+  default     = "15.14"
+}
+
+variable "rds_db_name" {
+  description = "Name of the database to create"
+  type        = string
+  default     = "attrahere"
+}
+
+variable "rds_username" {
+  description = "Username for the database"
+  type        = string
+  default     = "attrahere_admin"
+}
