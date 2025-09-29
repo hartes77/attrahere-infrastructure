@@ -57,11 +57,14 @@ module "postgres_db" {
   source = "../../modules/rds-postgres"
 
   # --- Parametri Base ---
-  db_name     = "attrahere-staging-db"
-  environment = "staging"
+  db_name       = var.rds_identifier
+  database_name = var.rds_db_name
+  db_username   = var.rds_username
+  environment   = "staging"
 
   # --- Configurazione Istanza ---
   instance_class        = var.db_instance_class
+  postgres_version      = var.rds_engine_version
   allocated_storage     = var.db_allocated_storage
   max_allocated_storage = var.db_max_allocated_storage
   
