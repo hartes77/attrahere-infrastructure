@@ -47,7 +47,7 @@ jobs:
           # Use nginx:alpine as placeholder for infrastructure testing
           # TODO: Replace with actual app image built from attrahere-platform repo
           PLACEHOLDER_IMAGE="nginx:alpine"
-          IMAGE_TAG=${{ github.sha }}
+          IMAGE_TAG="latest"
           IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
           
           # Pull, tag and push placeholder image to ECR for ECS testing
@@ -57,7 +57,7 @@ jobs:
           
           echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "✅ Placeholder image pushed to ECR for infrastructure validation"
+          echo "✅ Placeholder nginx:alpine pushed to ECR as :latest for infrastructure validation"
 
       - name: 📋 Download current ECS task definition
         id: download-task-def
@@ -73,7 +73,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: attrahere-api
+          container-name: attrahere-platform
           image: ${{ steps.placeholder-image.outputs.image-uri }}
 
       - name: 🚀 Deploy to Amazon ECS
