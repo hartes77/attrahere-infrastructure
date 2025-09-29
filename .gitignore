@@ -3,6 +3,7 @@
 *.tfstate.*
 *.tfplan
 *.tfvars
+!*.tfvars.example
 .terraform/
 .terraform.lock.hcl
 
@@ -23,6 +24,11 @@ Thumbs.db
 .env
 .env.local
 .env.production
+
+# Secrets and sensitive files
+github-actions-role-policy.json
+*.pem
+*.key
 
 # Temporary files
 *.tmp

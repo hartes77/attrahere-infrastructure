@@ -1,9 +1,133 @@
 # environments/staging/staging.tfvars.example
-# Template file for staging variables
-# Actual values should be provided via GitHub Secrets as TF_VAR_* environment variables
+# Template file for staging deployment variables
+# 
+# INSTRUCTIONS:
+# 1. Copy this file to staging.tfvars
+# 2. Replace placeholder values with actual AWS account details
+# 3. Ensure all secrets are configured in AWS Secrets Manager
+# 4. DO NOT commit staging.tfvars with real values
 
-vpc_name            = ""  # TF_VAR_vpc_name
-vpc_cidr            = ""  # TF_VAR_vpc_cidr  
-vpc_azs             = []  # TF_VAR_vpc_azs
-vpc_private_subnets = []  # TF_VAR_vpc_private_subnets
-vpc_public_subnets  = []  # TF_VAR_vpc_public_subnets
+# =============================================================================
+# AWS ACCOUNT CONFIGURATION
+# =============================================================================
+
+# AWS Account ID (12-digit number provided by CTO)
+aws_account_id = "123456789012"  # REPLACE WITH ACTUAL ACCOUNT ID
+
+# AWS Region for deployment
+aws_region = "eu-central-1"
+
+# Environment identifier
+environment = "staging"
+
+# =============================================================================
+# VPC CONFIGURATION
+# =============================================================================
+
+vpc_name            = "attrahere-staging-vpc"
+vpc_cidr            = "10.0.0.0/16"
+vpc_azs             = ["eu-central-1a", "eu-central-1b"]
+vpc_private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
+vpc_public_subnets  = ["10.0.101.0/24", "10.0.102.0/24"]
+
+# =============================================================================
+# ECR CONFIGURATION
+# =============================================================================
+
+ecr_repository_name = "attrahere-platform"
+
+# Image lifecycle policy (days to retain)
+ecr_image_tag_mutability = "MUTABLE"
+ecr_scan_on_push        = true
+
+# =============================================================================
+# ECS FARGATE CONFIGURATION
+# =============================================================================
+
+ecs_cluster_name = "attrahere-staging"
+ecs_service_name = "attrahere-api"
+
+# Task resource allocation
+ecs_task_cpu    = 512   # 0.5 vCPU
+ecs_task_memory = 1024  # 1 GB RAM
+
+# Service scaling
+ecs_desired_count = 1
+ecs_min_capacity  = 1
+ecs_max_capacity  = 3
+
+# Container configuration
+container_name = "attrahere-api"
+container_port = 8000
+
+# =============================================================================
+# RDS POSTGRESQL CONFIGURATION
+# =============================================================================
+
+rds_identifier     = "attrahere-staging-db"
+rds_engine_version = "15.4"
+rds_instance_class = "db.t3.micro"
+rds_allocated_storage     = 20
+rds_max_allocated_storage = 100
+
+# Database configuration
+rds_db_name  = "attrahere"
+rds_username = "attrahere_admin"
+
+# Backup and maintenance
+rds_backup_retention_days = 7
+rds_backup_window        = "03:00-04:00"
+rds_maintenance_window   = "sun:04:00-sun:05:00"
+rds_deletion_protection  = true
+rds_skip_final_snapshot  = false
+
+# =============================================================================
+# APPLICATION LOAD BALANCER
+# =============================================================================
+
+alb_name = "attrahere-staging-alb"
+alb_certificate_domain = "api.staging.attrahere.com"
+
+# Health check configuration
+health_check_path                = "/health"
+health_check_healthy_threshold   = 2
+health_check_unhealthy_threshold = 5
+health_check_timeout             = 5
+health_check_interval            = 30
+
+# =============================================================================
+# SECRETS CONFIGURATION
+# =============================================================================
+# These values reference AWS Secrets Manager paths
+# Actual values must be stored in Secrets Manager BEFORE deployment
+
+# Database password secret path
+db_password_secret_name = "staging/attrahere/database_password"
+
+# API secret key path
+api_secret_key_name = "staging/attrahere/api_secret_key"
+
+# JWT secret path
+jwt_secret_name = "staging/attrahere/jwt_secret"
+
+# =============================================================================
+# COMMON TAGS
+# =============================================================================
+
+common_tags = {
+  Environment = "staging"
+  Project     = "attrahere"
+  ManagedBy   = "terraform"
+  Owner       = "attrahere-platform"
+  CostCenter  = "engineering"
+}
+
+# =============================================================================
+# DOMAIN AND DNS CONFIGURATION  
+# =============================================================================
+
+domain_name = "attrahere.com"
+subdomain   = "api.staging"
+
+# Route 53 hosted zone ID (if managing DNS with Route 53)
+# route53_zone_id = "Z1D633PJN98FT9"  # Uncomment and set if using Route 53
