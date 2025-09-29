@@ -13,7 +13,7 @@ env:
   AWS_REGION: eu-central-1
   ECR_REPOSITORY: attrahere-platform
   ECS_CLUSTER: attrahere-staging
-  ECS_SERVICE: attrahere-api
+  ECS_SERVICE: attrahere-platform-service
 
 # OIDC permissions for AWS authentication
 permissions:
@@ -63,7 +63,7 @@ jobs:
         id: download-task-def
         run: |
           aws ecs describe-task-definition \
-            --task-definition ${{ env.ECS_SERVICE }} \
+            --task-definition attrahere-platform \
             --query taskDefinition > task-definition.json
           
           echo "task-def-file=task-definition.json" >> $GITHUB_OUTPUT
