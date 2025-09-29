@@ -60,8 +60,9 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # GitHub Actions cache not supported with docker driver
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
 
       - name: 🛡️ Security Scan with Trivy
         uses: aquasecurity/trivy-action@master
