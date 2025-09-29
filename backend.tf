@@ -1,10 +1,10 @@
 # backend.tf
 terraform {
   backend "s3" {
-    bucket         = "attrahere-terraform-state-prod" # Sostituisci con il nome del bucket S3 creato
+    bucket         = "attrahere-terraform-state-482352877352" # S3 bucket created
     key            = "global/s3/terraform.tfstate"
     region         = "eu-central-1"
-    dynamodb_table = "attrahere-terraform-locks"   # Sostituisci con il nome della tabella DynamoDB
+    dynamodb_table = "attrahere-terraform-locks"   # DynamoDB table created
     encrypt        = true
   }
 }

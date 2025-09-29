@@ -1,0 +1,144 @@
+name: 🚀 Deploy to Staging
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'attrahere-platform/api/**'
+      - 'attrahere-platform/Dockerfile'
+      - 'attrahere-platform/requirements.txt'
+      - '.github/workflows/deploy-staging.yml'
+
+env:
+  AWS_REGION: eu-central-1
+  ECR_REPOSITORY: attrahere-platform
+  ECS_CLUSTER: attrahere-staging
+  ECS_SERVICE: attrahere-api
+
+# OIDC permissions for AWS authentication
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-staging:
+    name: 🏗️ Build & Deploy to Staging
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: GitHub-Actions-Deploy-Staging
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔑 Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🔍 Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 🏗️ Build Docker image
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./attrahere-platform
+          file: ./attrahere-platform/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🛡️ Security Scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'  # Fail on CRITICAL vulnerabilities
+
+      - name: 📤 Push Docker image to ECR
+        id: push-image
+        run: |
+          # Re-tag and push the built image
+          IMAGE_TAG=${{ github.sha }}
+          IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          
+          docker tag ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} $IMAGE_URI
+          docker push $IMAGE_URI
+          
+          echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+          echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: 📋 Download current ECS task definition
+        id: download-task-def
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_SERVICE }} \
+            --query taskDefinition > task-definition.json
+          
+          echo "task-def-file=task-definition.json" >> $GITHUB_OUTPUT
+
+      - name: 🔄 Update ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: attrahere-api
+          image: ${{ steps.push-image.outputs.image-uri }}
+
+      - name: 🚀 Deploy to Amazon ECS
+        id: deploy-ecs
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: 🧪 Health Check
+        run: |
+          # Wait for deployment to be healthy
+          sleep 30
+          
+          # Get the ALB endpoint (this will be set up by Terraform)
+          ENDPOINT="https://api.staging.attrahere.com"
+          
+          # Health check with retries
+          for i in {1..5}; do
+            if curl -f -s "${ENDPOINT}/health"; then
+              echo "✅ Health check passed!"
+              exit 0
+            fi
+            echo "⏳ Health check attempt $i failed, retrying in 30s..."
+            sleep 30
+          done
+          
+          echo "❌ Health check failed after 5 attempts"
+          exit 1
+
+      - name: 📊 Deployment Summary
+        if: always()
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: Staging" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: ${{ steps.push-image.outputs.image-uri }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Git SHA**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **ECS Cluster**: ${{ env.ECS_CLUSTER }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **ECS Service**: ${{ env.ECS_SERVICE }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
