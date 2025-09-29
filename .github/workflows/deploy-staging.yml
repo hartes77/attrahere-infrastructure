@@ -8,6 +8,7 @@ on:
       - 'attrahere-platform/Dockerfile'
       - 'attrahere-platform/requirements.txt'
       - '.github/workflows/deploy-staging.yml'
+      - 'README.md'
 
 env:
   AWS_REGION: eu-central-1
