@@ -4,11 +4,10 @@ on:
   push:
     branches: [main]
     paths:
-      - 'attrahere-platform/api/**'
-      - 'attrahere-platform/Dockerfile'
-      - 'attrahere-platform/requirements.txt'
+      - 'src/attrahere/**'
+      - 'Dockerfile'
+      - 'pyproject.toml'
       - '.github/workflows/deploy-staging.yml'
-      - 'README.md'
 
 env:
   AWS_REGION: eu-central-1
@@ -42,23 +41,27 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: 🔍 Prepare placeholder image for ECS testing
-        id: placeholder-image
+      - name: 🏗️ Build and push application image
+        id: build-push
         run: |
-          # Use nginx:alpine as placeholder for infrastructure testing
-          # TODO: Replace with actual app image built from attrahere-platform repo
-          PLACEHOLDER_IMAGE="nginx:alpine"
-          IMAGE_TAG="latest"
+          # Build actual Attrahere application image
+          IMAGE_TAG=${{ github.sha }}
           IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          LATEST_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
           
-          # Pull, tag and push placeholder image to ECR for ECS testing
-          docker pull $PLACEHOLDER_IMAGE
-          docker tag $PLACEHOLDER_IMAGE $IMAGE_URI
+          # Build Docker image from application Dockerfile
+          echo "🔨 Building Attrahere Platform application image..."
+          docker build -t $IMAGE_URI -t $LATEST_URI .
+          
+          # Push both tagged and latest images to ECR
+          echo "📤 Pushing image to ECR..."
           docker push $IMAGE_URI
+          docker push $LATEST_URI
           
           echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "✅ Placeholder nginx:alpine pushed to ECR as :latest for infrastructure validation"
+          echo "✅ Attrahere Platform application image built and pushed to ECR"
+          echo "📋 Image: $IMAGE_URI"
 
       - name: 📋 Download current ECS task definition
         id: download-task-def
@@ -75,7 +78,7 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: attrahere-platform
-          image: ${{ steps.placeholder-image.outputs.image-uri }}
+          image: ${{ steps.build-push.outputs.image-uri }}
 
       - name: 🚀 Deploy to Amazon ECS
         id: deploy-ecs
@@ -112,7 +115,7 @@ jobs:
         run: |
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment**: Staging" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image**: ${{ steps.placeholder-image.outputs.image-uri }} (nginx:alpine placeholder)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: ${{ steps.build-push.outputs.image-uri }} (Attrahere Platform)" >> $GITHUB_STEP_SUMMARY
           echo "- **Git SHA**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- **ECS Cluster**: ${{ env.ECS_CLUSTER }}" >> $GITHUB_STEP_SUMMARY
           echo "- **ECS Service**: ${{ env.ECS_SERVICE }}" >> $GITHUB_STEP_SUMMARY
