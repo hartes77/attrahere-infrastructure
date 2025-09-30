@@ -47,9 +47,13 @@ jobs:
       - name: 📋 Terraform Plan
         id: plan
         run: |
-          cp terraform.tfvars.example terraform.tfvars
           terraform plan \
             -var="image_tag=${{ github.event.inputs.image_tag }}" \
+            -var="vpc_name=attrahere-staging-vpc" \
+            -var="vpc_cidr=10.0.0.0/16" \
+            -var='vpc_azs=["eu-central-1a", "eu-central-1b"]' \
+            -var='vpc_private_subnets=["10.0.1.0/24", "10.0.2.0/24"]' \
+            -var='vpc_public_subnets=["10.0.101.0/24", "10.0.102.0/24"]' \
             -out=tfplan
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
