@@ -54,3 +54,36 @@ resource "aws_iam_role" "ecs_task_role" {
     Component   = "iam-role"
   })
 }
+
+# IAM policy for Secrets Manager access
+resource "aws_iam_role_policy" "ecs_task_secrets_manager" {
+  name = "${var.cluster_name}-ecs-task-secrets-manager"
+  role = aws_iam_role.ecs_task_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = [
+          var.database_secret_arn
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "kms:ViaService" = "secretsmanager.${var.aws_region}.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+}

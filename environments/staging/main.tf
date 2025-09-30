@@ -33,7 +33,7 @@ module "ecs_fargate" {
   source = "../../modules/ecs-fargate"
 
   cluster_name    = "attrahere-staging"
-  container_image = "${module.ecr.repository_url}:staging-latest"
+  container_image = "${module.ecr.repository_url}:${var.image_tag}"
   
   vpc_id             = module.vpc.vpc_id
   vpc_cidr           = module.vpc.vpc_cidr_block
@@ -50,6 +50,9 @@ module "ecs_fargate" {
     Environment = "staging"
     Terraform   = "true"
   }
+  
+  # Database secret ARN from RDS module
+  database_secret_arn = module.postgres_db.master_user_secret_arn
 }
 
 # PostgreSQL RDS Database

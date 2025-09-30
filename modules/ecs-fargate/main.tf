@@ -59,6 +59,10 @@ resource "aws_ecs_task_definition" "attrahere_platform" {
         {
           name  = "ENVIRONMENT"
           value = var.environment
+        },
+        {
+          name  = "DATABASE_SECRET_ARN"
+          value = var.database_secret_arn
         }
       ]
       

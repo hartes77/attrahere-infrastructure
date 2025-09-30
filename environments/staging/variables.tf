@@ -1,5 +1,11 @@
 # environments/staging/variables.tf
 
+variable "image_tag" {
+  description = "Docker image tag to deploy (Git SHA)"
+  type        = string
+  default     = "latest"
+}
+
 variable "vpc_name" {
   description = "Name of the staging VPC"
   type        = string

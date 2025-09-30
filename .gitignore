@@ -33,3 +33,6 @@ github-actions-role-policy.json
 # Temporary files
 *.tmp
 *.bak
+
+# Prevent embedded repositories
+attrahere-platform/
