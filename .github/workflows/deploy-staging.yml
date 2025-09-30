@@ -47,6 +47,7 @@ jobs:
       - name: 📋 Terraform Plan
         id: plan
         run: |
+          cp terraform.tfvars.example terraform.tfvars
           terraform plan \
             -var="image_tag=${{ github.event.inputs.image_tag }}" \
             -out=tfplan
