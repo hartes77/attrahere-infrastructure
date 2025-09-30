@@ -73,7 +73,7 @@ output "database_username" {
 
 output "database_secret_arn" {
   description = "ARN of the database password secret in AWS Secrets Manager"
-  value       = module.postgres_db.secrets_manager_secret_arn
+  value       = module.postgres_db.master_user_secret_arn
 }
 
 output "database_connection_string" {
