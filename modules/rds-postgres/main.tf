@@ -46,31 +46,21 @@ resource "aws_security_group" "postgres" {
   }
 }
 
-# Random password for database
-resource "random_password" "postgres_password" {
-  length  = 32
-  special = true
-}
-
-# Store password in AWS Secrets Manager
-resource "aws_secretsmanager_secret" "postgres_password" {
-  name                    = "${var.db_name}-postgres-password"
-  description             = "PostgreSQL password for ${var.db_name}"
-  recovery_window_in_days = 7
-
+# KMS key for RDS managed secrets (optional but recommended)
+resource "aws_kms_key" "rds_secrets" {
+  description = "KMS key for RDS managed secrets for ${var.db_name}"
+  
   tags = {
+    Name        = "${var.db_name}-rds-secrets-key"
     Environment = var.environment
     Project     = "attrahere"
     Owner       = "platform-team"
   }
 }
 
-resource "aws_secretsmanager_secret_version" "postgres_password" {
-  secret_id = aws_secretsmanager_secret.postgres_password.id
-  secret_string = jsonencode({
-    username = var.db_username
-    password = random_password.postgres_password.result
-  })
+resource "aws_kms_alias" "rds_secrets" {
+  name          = "alias/${var.db_name}-rds-secrets"
+  target_key_id = aws_kms_key.rds_secrets.key_id
 }
 
 # RDS PostgreSQL instance
@@ -87,7 +77,10 @@ resource "aws_db_instance" "postgres" {
 
   db_name  = var.database_name
   username = var.db_username
-  password = random_password.postgres_password.result
+  
+  # RDS-managed master password (secure)
+  manage_master_user_password   = true
+  master_user_secret_kms_key_id = aws_kms_key.rds_secrets.key_id
 
   vpc_security_group_ids = [aws_security_group.postgres.id]
   db_subnet_group_name   = aws_db_subnet_group.postgres.name

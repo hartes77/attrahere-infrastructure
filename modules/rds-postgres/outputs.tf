@@ -41,14 +41,14 @@ output "db_subnet_group_name" {
   value       = aws_db_subnet_group.postgres.name
 }
 
-output "secrets_manager_secret_arn" {
-  description = "ARN of the Secrets Manager secret containing database credentials"
-  value       = aws_secretsmanager_secret.postgres_password.arn
+output "master_user_secret_arn" {
+  description = "ARN of the RDS-managed master user secret in Secrets Manager"
+  value       = aws_db_instance.postgres.master_user_secret[0].secret_arn
 }
 
-output "secrets_manager_secret_name" {
-  description = "Name of the Secrets Manager secret containing database credentials"
-  value       = aws_secretsmanager_secret.postgres_password.name
+output "master_user_secret_kms_key_id" {
+  description = "KMS key ID used to encrypt the master user secret"
+  value       = aws_kms_key.rds_secrets.key_id
 }
 
 output "connection_string" {
