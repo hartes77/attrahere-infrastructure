@@ -54,6 +54,8 @@ jobs:
             -var='vpc_azs=["eu-central-1a", "eu-central-1b"]' \
             -var='vpc_private_subnets=["10.0.1.0/24", "10.0.2.0/24"]' \
             -var='vpc_public_subnets=["10.0.101.0/24", "10.0.102.0/24"]' \
+            -var="api_secret_key_arn=${{ secrets.API_SECRET_KEY_ARN }}" \
+            -var="jwt_secret_arn=${{ secrets.JWT_SECRET_ARN }}" \
             -out=tfplan
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
