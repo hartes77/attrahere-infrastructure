@@ -96,3 +96,74 @@ variable "database_secret_arn" {
   description = "ARN of the RDS master user secret in AWS Secrets Manager"
   type        = string
 }
+
+variable "db_host" {
+  description = "Database hostname"
+  type        = string
+}
+
+variable "db_name" {
+  description = "Database name"
+  type        = string
+  default     = "attrahere"
+}
+
+variable "db_user" {
+  description = "Database username"
+  type        = string
+  default     = "attrahere_admin"
+}
+
+variable "db_password" {
+  description = "Database password (used for secret construction)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "api_secret_key" {
+  description = "API secret key (used for secret construction)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "jwt_secret" {
+  description = "JWT secret (used for secret construction)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "alert_email_endpoints" {
+  description = "List of email addresses for CloudWatch alarms"
+  type        = list(string)
+  default     = []
+}
+
+variable "enable_db_rotation" {
+  description = "Enable automatic database password rotation"
+  type        = bool
+  default     = false
+}
+
+variable "use_custom_kms_key" {
+  description = "Use custom KMS key for secrets encryption"
+  type        = bool
+  default     = false
+}
+
+variable "api_secret_key_arn" {
+  description = "ARN of the API_SECRET_KEY in Secrets Manager"
+  type        = string
+}
+
+variable "jwt_secret_arn" {
+  description = "ARN of the JWT_SECRET in Secrets Manager"
+  type        = string
+}
+
+variable "kms_key_arn" {
+  description = "ARN of the KMS key used for secret decryption"
+  type        = string
+}

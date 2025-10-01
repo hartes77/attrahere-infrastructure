@@ -108,3 +108,13 @@ variable "rds_username" {
   type        = string
   default     = "attrahere_admin"
 }
+
+variable "api_secret_key_arn" {
+  description = "ARN of the API_SECRET_KEY in Secrets Manager"
+  type        = string
+}
+
+variable "jwt_secret_arn" {
+  description = "ARN of the JWT_SECRET in Secrets Manager"  
+  type        = string
+}

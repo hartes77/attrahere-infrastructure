@@ -61,10 +61,27 @@ resource "aws_ecs_task_definition" "attrahere_platform" {
           value = var.environment
         },
         {
-          name  = "DATABASE_SECRET_ARN"
-          value = var.database_secret_arn
+          name  = "PORT"
+          value = "8000"
         }
       ]
+      
+      secrets = [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = aws_secretsmanager_secret.database_url.arn
+        },
+        {
+          name      = "API_SECRET_KEY"
+          valueFrom = var.api_secret_key_arn
+        },
+        {
+          name      = "JWT_SECRET"
+          valueFrom = var.jwt_secret_arn
+        }
+      ]
+      
+      command = ["sh", "-c", "uvicorn api.main:app --host 0.0.0.0 --port $${PORT:-8000}"]
       
       logConfiguration = {
         logDriver = "awslogs"
@@ -76,7 +93,7 @@ resource "aws_ecs_task_definition" "attrahere_platform" {
       }
       
       healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+        command     = ["CMD-SHELL", "curl -f http://localhost:$${PORT:-8000}/health || exit 1"]
         interval    = 30
         timeout     = 5
         retries     = 3

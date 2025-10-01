@@ -51,8 +51,18 @@ module "ecs_fargate" {
     Terraform   = "true"
   }
   
-  # Database secret ARN from RDS module
+  # Database configuration
   database_secret_arn = module.postgres_db.master_user_secret_arn
+  db_host            = module.postgres_db.db_endpoint
+  db_name            = var.rds_db_name
+  db_user            = var.rds_username
+  
+  # Enterprise secrets configuration (ARNs will be added via variables)
+  api_secret_key_arn = var.api_secret_key_arn
+  jwt_secret_arn     = var.jwt_secret_arn
+  
+  # KMS key for secrets decryption (minimum privilege)
+  kms_key_arn = module.postgres_db.master_user_secret_kms_key_arn
 }
 
 # PostgreSQL RDS Database

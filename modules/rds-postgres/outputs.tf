@@ -51,6 +51,11 @@ output "master_user_secret_kms_key_id" {
   value       = aws_kms_key.rds_secrets.key_id
 }
 
+output "master_user_secret_kms_key_arn" {
+  description = "KMS key ARN used to encrypt the master user secret"
+  value       = aws_kms_key.rds_secrets.arn
+}
+
 output "connection_string" {
   description = "Database connection string template (password should be retrieved from Secrets Manager)"
   value       = "postgresql://${aws_db_instance.postgres.username}:PASSWORD_FROM_SECRETS_MANAGER@${aws_db_instance.postgres.endpoint}:${aws_db_instance.postgres.port}/${aws_db_instance.postgres.db_name}"
