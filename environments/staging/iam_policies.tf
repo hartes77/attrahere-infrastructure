@@ -130,17 +130,29 @@ resource "aws_iam_policy" "github_actions_terraform" {
         ]
       },
       {
-        Sid    = "KMSManagement"
+        Sid    = "KMSRead"
         Effect = "Allow"
         Action = [
-          "kms:CreateKey",
-          "kms:DeleteKey",
           "kms:DescribeKey",
           "kms:GetKeyPolicy",
           "kms:GetKeyRotationStatus",
           "kms:ListKeys",
           "kms:ListAliases",
-          "kms:ListResourceTags",
+          "kms:ListResourceTags"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:RequestedRegion" = "eu-central-1"
+          }
+        }
+      },
+      {
+        Sid    = "KMSManagement"
+        Effect = "Allow"
+        Action = [
+          "kms:CreateKey",
+          "kms:DeleteKey",
           "kms:CreateAlias",
           "kms:DeleteAlias",
           "kms:TagResource",
@@ -162,14 +174,21 @@ resource "aws_iam_policy" "github_actions_terraform" {
         }
       },
       {
-        Sid    = "CloudWatchLogs"
+        Sid    = "CloudWatchLogsRead"
+        Effect = "Allow"
+        Action = [
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:ListTagsLogGroup"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "CloudWatchLogsWrite"
         Effect = "Allow"
         Action = [
           "logs:CreateLogGroup",
           "logs:DeleteLogGroup",
-          "logs:DescribeLogGroups",
-          "logs:DescribeLogStreams",
-          "logs:ListTagsLogGroup",
           "logs:TagResource",
           "logs:UntagResource",
           "logs:CreateLogStream",
@@ -179,8 +198,7 @@ resource "aws_iam_policy" "github_actions_terraform" {
         ]
         Resource = [
           "arn:aws:logs:eu-central-1:482352877352:log-group:/ecs/attrahere-*",
-          "arn:aws:logs:eu-central-1:482352877352:log-group:/ecs/attrahere-*:*",
-          "*"
+          "arn:aws:logs:eu-central-1:482352877352:log-group:/ecs/attrahere-*:*"
         ]
       },
       {
