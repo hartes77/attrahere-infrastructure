@@ -188,6 +188,79 @@ resource "aws_iam_policy" "github_actions_terraform" {
         ]
       },
       {
+        Sid    = "TerraformStateBackend"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket",
+          "s3:GetBucketVersioning",
+          "s3:GetBucketLocation"
+        ]
+        Resource = [
+          "arn:aws:s3:::attrahere-terraform-state-staging",
+          "arn:aws:s3:::attrahere-terraform-state-staging/*"
+        ]
+      },
+      {
+        Sid    = "DynamoDBStateLocking"
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:DescribeTable"
+        ]
+        Resource = [
+          "arn:aws:dynamodb:eu-central-1:482352877352:table/attrahere-terraform-locks-staging"
+        ]
+      },
+      {
+        Sid    = "ECSManagement"
+        Effect = "Allow"
+        Action = [
+          "ecs:CreateCluster",
+          "ecs:DeleteCluster",
+          "ecs:DescribeClusters",
+          "ecs:CreateService",
+          "ecs:UpdateService",
+          "ecs:DeleteService",
+          "ecs:DescribeServices",
+          "ecs:RegisterTaskDefinition",
+          "ecs:DeregisterTaskDefinition",
+          "ecs:DescribeTaskDefinition",
+          "ecs:ListTaskDefinitions",
+          "ecs:TagResource",
+          "ecs:UntagResource"
+        ]
+        Resource = [
+          "arn:aws:ecs:eu-central-1:482352877352:cluster/attrahere-*",
+          "arn:aws:ecs:eu-central-1:482352877352:service/attrahere-*/attrahere-*",
+          "arn:aws:ecs:eu-central-1:482352877352:task-definition/attrahere-*:*"
+        ]
+      },
+      {
+        Sid    = "ECRAccess"
+        Effect = "Allow"
+        Action = [
+          "ecr:CreateRepository",
+          "ecr:DeleteRepository",
+          "ecr:DescribeRepositories",
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:PutLifecyclePolicy",
+          "ecr:DeleteLifecyclePolicy",
+          "ecr:GetLifecyclePolicy"
+        ]
+        Resource = [
+          "arn:aws:ecr:eu-central-1:482352877352:repository/attrahere-*",
+          "*"
+        ]
+      },
+      {
         Sid    = "CloudWatchDashboards"
         Effect = "Allow"
         Action = [
