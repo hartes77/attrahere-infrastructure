@@ -1,5 +1,6 @@
 # environments/staging/main.tf
 # Staging environment for Attrahere Platform
+# Trigger auto-deployment for workingDirectory fix
 
 module "vpc" {
   source = "../../modules/vpc"
