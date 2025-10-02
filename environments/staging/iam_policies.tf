@@ -17,6 +17,7 @@ resource "aws_iam_policy" "github_actions_terraform" {
           "ec2:DeleteVpc",
           "ec2:ModifyVpcAttribute",
           "ec2:DescribeVpcs",
+          "ec2:DescribeVpcAttribute",
           "ec2:CreateSubnet",
           "ec2:DeleteSubnet", 
           "ec2:DescribeSubnets",
@@ -69,7 +70,9 @@ resource "aws_iam_policy" "github_actions_terraform" {
           "iam:CreatePolicy",
           "iam:DeletePolicy",
           "iam:GetPolicy",
+          "iam:GetPolicyVersion",
           "iam:ListPolicies",
+          "iam:ListPolicyVersions",
           "iam:AttachRolePolicy",
           "iam:DetachRolePolicy",
           "iam:PutRolePolicy",
@@ -95,6 +98,9 @@ resource "aws_iam_policy" "github_actions_terraform" {
           "secretsmanager:GetSecretValue",
           "secretsmanager:DescribeSecret",
           "secretsmanager:ListSecrets",
+          "secretsmanager:GetResourcePolicy",
+          "secretsmanager:PutResourcePolicy",
+          "secretsmanager:DeleteResourcePolicy",
           "secretsmanager:TagResource",
           "secretsmanager:UntagResource"
         ]
@@ -110,10 +116,13 @@ resource "aws_iam_policy" "github_actions_terraform" {
           "kms:CreateKey",
           "kms:DeleteKey",
           "kms:DescribeKey",
+          "kms:GetKeyPolicy",
+          "kms:GetKeyRotationStatus",
           "kms:ListKeys",
+          "kms:ListAliases",
+          "kms:ListResourceTags",
           "kms:CreateAlias",
           "kms:DeleteAlias",
-          "kms:ListAliases",
           "kms:TagResource",
           "kms:UntagResource",
           "kms:Encrypt",
@@ -139,11 +148,14 @@ resource "aws_iam_policy" "github_actions_terraform" {
           "logs:CreateLogGroup",
           "logs:DeleteLogGroup",
           "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:ListTagsLogGroup",
           "logs:TagResource",
           "logs:UntagResource",
           "logs:CreateLogStream",
           "logs:DeleteLogStream",
-          "logs:DescribeLogStreams"
+          "logs:PutRetentionPolicy",
+          "logs:DeleteRetentionPolicy"
         ]
         Resource = [
           "arn:aws:logs:eu-central-1:482352877352:log-group:/ecs/attrahere-*",
@@ -157,7 +169,9 @@ resource "aws_iam_policy" "github_actions_terraform" {
           "sns:CreateTopic",
           "sns:DeleteTopic",
           "sns:GetTopicAttributes",
+          "sns:SetTopicAttributes",
           "sns:ListTopics",
+          "sns:ListTagsForResource",
           "sns:Subscribe",
           "sns:Unsubscribe",
           "sns:TagResource",
@@ -247,13 +261,18 @@ resource "aws_iam_policy" "github_actions_terraform" {
           "ecr:CreateRepository",
           "ecr:DeleteRepository",
           "ecr:DescribeRepositories",
+          "ecr:ListTagsForResource",
+          "ecr:TagResource",
+          "ecr:UntagResource",
           "ecr:GetAuthorizationToken",
           "ecr:BatchCheckLayerAvailability",
           "ecr:GetDownloadUrlForLayer",
           "ecr:BatchGetImage",
           "ecr:PutLifecyclePolicy",
           "ecr:DeleteLifecyclePolicy",
-          "ecr:GetLifecyclePolicy"
+          "ecr:GetLifecyclePolicy",
+          "ecr:GetRepositoryPolicy",
+          "ecr:SetRepositoryPolicy"
         ]
         Resource = [
           "arn:aws:ecr:eu-central-1:482352877352:repository/attrahere-*",
