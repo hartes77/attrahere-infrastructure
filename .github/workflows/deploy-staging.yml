@@ -1,11 +1,16 @@
 name: 🚀 Deploy to Staging
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'environments/staging/**'
+      - 'modules/**'
   workflow_dispatch:
     inputs:
       image_tag:
         description: 'The Git SHA tag of the Docker image to deploy'
-        required: true
+        required: false
         type: string
 
 env:
@@ -44,11 +49,21 @@ jobs:
         run: terraform init
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
+      - name: 🏷️ Set Image Tag
+        id: image_tag
+        run: |
+          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+            echo "IMAGE_TAG=${{ github.event.inputs.image_tag }}" >> $GITHUB_ENV
+          else
+            # Use existing image tag from current deployment
+            echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+          fi
+
       - name: 📋 Terraform Plan
         id: plan
         run: |
           terraform plan \
-            -var="image_tag=${{ github.event.inputs.image_tag }}" \
+            -var="image_tag=${{ env.IMAGE_TAG }}" \
             -var="vpc_name=attrahere-staging-vpc" \
             -var="vpc_cidr=10.0.0.0/16" \
             -var='vpc_azs=["eu-central-1a", "eu-central-1b"]' \
@@ -71,7 +86,7 @@ jobs:
         run: |
           echo "## 🚀 Infrastructure Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment**: Staging" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image Tag**: ${{ github.event.inputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag**: ${{ env.IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Terraform Version**: ${{ env.TF_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Working Directory**: ${{ env.WORKING_DIRECTORY }}" >> $GITHUB_STEP_SUMMARY
           echo "- **AWS Region**: ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
@@ -80,4 +95,4 @@ jobs:
           echo "### 🔗 Resources Updated" >> $GITHUB_STEP_SUMMARY
           echo "- ECS Service: attrahere-platform-service" >> $GITHUB_STEP_SUMMARY
           echo "- ECS Cluster: attrahere-staging" >> $GITHUB_STEP_SUMMARY
-          echo "- Container Image: Updated to tag \`${{ github.event.inputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Container Image: Updated to tag \`${{ env.IMAGE_TAG }}\`" >> $GITHUB_STEP_SUMMARY
