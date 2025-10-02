@@ -49,7 +49,9 @@ resource "aws_iam_policy" "github_actions_terraform" {
           "ec2:DescribeAddresses",
           "ec2:CreateTags",
           "ec2:DeleteTags",
-          "ec2:DescribeTags"
+          "ec2:DescribeTags",
+          "ec2:DescribeAddressesAttribute",
+          "ec2:DescribeNetworkAcls"
         ]
         Resource = "*"
         Condition = {
@@ -177,7 +179,8 @@ resource "aws_iam_policy" "github_actions_terraform" {
         ]
         Resource = [
           "arn:aws:logs:eu-central-1:482352877352:log-group:/ecs/attrahere-*",
-          "arn:aws:logs:eu-central-1:482352877352:log-group:/ecs/attrahere-*:*"
+          "arn:aws:logs:eu-central-1:482352877352:log-group:/ecs/attrahere-*:*",
+          "*"
         ]
       },
       {
