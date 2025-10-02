@@ -213,7 +213,7 @@ resource "aws_iam_policy" "github_actions_terraform" {
           "dynamodb:DescribeTable"
         ]
         Resource = [
-          "arn:aws:dynamodb:eu-central-1:482352877352:table/attrahere-terraform-locks-staging"
+          "arn:aws:dynamodb:eu-central-1:482352877352:table/attrahere-terraform-locks"
         ]
       },
       {
