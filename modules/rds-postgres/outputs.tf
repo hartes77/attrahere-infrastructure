@@ -43,7 +43,7 @@ output "db_subnet_group_name" {
 
 output "master_user_secret_arn" {
   description = "ARN of the RDS-managed master user secret in Secrets Manager"
-  value       = aws_db_instance.postgres.master_user_secret[0].secret_arn
+  value       = length(aws_db_instance.postgres.master_user_secret) > 0 ? aws_db_instance.postgres.master_user_secret[0].secret_arn : null
 }
 
 output "master_user_secret_kms_key_id" {
