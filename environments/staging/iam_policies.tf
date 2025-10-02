@@ -89,6 +89,24 @@ resource "aws_iam_policy" "github_actions_terraform" {
         ]
       },
       {
+        Sid    = "SelfManagement"
+        Effect = "Allow"
+        Action = [
+          "iam:GetRole",
+          "iam:GetRolePolicy",
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies",
+          "iam:GetPolicy",
+          "iam:GetPolicyVersion",
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy"
+        ]
+        Resource = [
+          "arn:aws:iam::482352877352:role/GitHubActions-AttrahereStaging",
+          "arn:aws:iam::482352877352:policy/GitHubActions-TerraformEnterprisePolicy"
+        ]
+      },
+      {
         Sid    = "SecretsManager"
         Effect = "Allow"
         Action = [
