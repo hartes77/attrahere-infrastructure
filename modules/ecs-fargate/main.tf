@@ -81,7 +81,8 @@ resource "aws_ecs_task_definition" "attrahere_platform" {
         }
       ]
       
-      command = ["sh", "-c", "uvicorn api.main:app --host 0.0.0.0 --port $${PORT:-8000}"]
+      workingDirectory = "/app"
+      command = ["sh", "-c", "cd /app && uvicorn api.main:app --host 0.0.0.0 --port $${PORT:-8000}"]
       
       logConfiguration = {
         logDriver = "awslogs"
